@@ -427,7 +427,7 @@ namespace sqlbackup
         private void button9_Click(object sender, EventArgs e)//测试FTP2连接
         {
             FtpWeb ftp = new FtpWeb(textBox13.Text.Trim(), textBox9.Text.Trim(), textBox12.Text.Trim(), textBox11.Text.Trim());
-            if (ftp.Connect() != null)
+            if (ftp.Connect() != true)
             {
                 MessageBox.Show("成功连接FTP服务器");
             }
