@@ -1,0 +1,162 @@
+﻿namespace sqlbackup
+{
+    partial class BackupTime
+    {
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BackupTime));
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.button4 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.序号 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.backtime = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.backtype = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            this.SuspendLayout();
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.button4);
+            this.groupBox1.Controls.Add(this.button2);
+            this.groupBox1.Controls.Add(this.label4);
+            this.groupBox1.Controls.Add(this.button1);
+            this.groupBox1.Location = new System.Drawing.Point(12, 12);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(479, 102);
+            this.groupBox1.TabIndex = 0;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "说明";
+            // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(393, 73);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(75, 23);
+            this.button4.TabIndex = 3;
+            this.button4.Text = "删除行";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(393, 30);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(66, 23);
+            this.button2.TabIndex = 1;
+            this.button2.Text = "取消";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // label4
+            // 
+            this.label4.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label4.Location = new System.Drawing.Point(29, 21);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(277, 51);
+            this.label4.TabIndex = 8;
+            this.label4.Text = "请根据格式设置  设置每天备份时间段字段为time加序号(如time1)  备份时间24小时制从小到大排序，格式(如10:00) 备份方式：1为完整备份；2为差异" +
+    "备份，0为不备份\r\n";
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(312, 30);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(65, 23);
+            this.button1.TabIndex = 2;
+            this.button1.Text = "保存";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // dataGridView1
+            // 
+            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.序号,
+            this.backtime,
+            this.backtype});
+            this.dataGridView1.Location = new System.Drawing.Point(12, 132);
+            this.dataGridView1.Name = "dataGridView1";
+            this.dataGridView1.RowTemplate.Height = 23;
+            this.dataGridView1.Size = new System.Drawing.Size(486, 268);
+            this.dataGridView1.TabIndex = 1;
+            // 
+            // 序号
+            // 
+            this.序号.DataPropertyName = "NO";
+            this.序号.HeaderText = "No";
+            this.序号.Name = "序号";
+            // 
+            // backtime
+            // 
+            this.backtime.DataPropertyName = "itemname";
+            this.backtime.HeaderText = "备份时间";
+            this.backtime.Name = "backtime";
+            // 
+            // backtype
+            // 
+            this.backtype.DataPropertyName = "itemvalue";
+            this.backtype.HeaderText = "备份类型";
+            this.backtype.Items.AddRange(new object[] {
+            "1",
+            "2"});
+            this.backtype.Name = "backtype";
+            // 
+            // BackupTime
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(500, 398);
+            this.Controls.Add(this.dataGridView1);
+            this.Controls.Add(this.groupBox1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Name = "BackupTime";
+            this.ShowInTaskbar = false;
+            this.Text = "备份时间设置";
+            this.Load += new System.EventHandler(this.BackupTime_Load);
+            this.groupBox1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            this.ResumeLayout(false);
+
+        }
+
+        #endregion
+
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.DataGridViewTextBoxColumn 序号;
+        private System.Windows.Forms.DataGridViewTextBoxColumn backtime;
+        private System.Windows.Forms.DataGridViewComboBoxColumn backtype;
+    }
+}
