@@ -1,0 +1,47 @@
+﻿
+;数据库与FTP服务器配置
+;Server 数据库名 UserName 用户名 PassWord 密码 WindowsIdentity 是否用windows集成认证
+[SqlConnect]
+Server=(local)
+UserName=sa
+PassWord=10296
+WindowsIdentity=false
+;不备份数据库列表,以逗号隔开(data1,data2,data3)
+[notbackupdb]
+notbackupdb=ReportServerTempDB,tempdb,master,ReportServer
+
+
+;备份配置
+[localbackup]
+bDataServer=true
+LocalPath=E:\gysoft
+Day=20
+WhetherDel=false
+LastTime=2014-09-04 09:34:14
+备份时间设置
+[backuptime]
+time1=10:15,2
+time2=11:15,1
+time3=15:50,1
+time4=17:30,1
+time5=23:00,1
+time6=22:00,1
+
+
+;异地备份 FTP上传
+[FTP1]
+IP=127.0.0.1
+UserID=bo
+Password=10296
+Path=ftp1
+Port=21
+[FTP2]
+IP=127.0.0.1
+UserID=bo
+Password=10296
+Path=ftp2
+Port=21
+
+;判断备份文件是否已经上传 键表示已备份的数据库压缩文件，值(0,1)表示是否已上传到FTP服务器，两个FTP都上传后删除该键
+;示例E:\gysoft\20140905_11\201409051115_model.bak.rar=1,1
+[IfFtpUpLoad]

@@ -1,0 +1,78 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
+using baseclass;
+
+namespace sqlbackup
+{
+    public partial class BackupTime : Form
+    {
+        private DataTable idt_tb = new DataTable();
+
+        public BackupTime()
+        {
+            InitializeComponent();
+        }
+        private void BackupTime_Load(object sender, EventArgs e)
+        {
+            MyConfig.DbName="backdblog.db";
+            idt_tb = MyConfig.ExecuteDataTable("select no,backtime,backtype from backtime");
+            dataGridView1.DataSource = idt_tb;
+        }
+
+        private void button1_Click(object sender, EventArgs e)//保存
+        {
+            string ls_rc;
+            ls_rc = SqlHelper.of_SaveDataTable("backtime", idt_tb, MyConfig.DbName);
+            if (GYstring.of_LeftStr(ls_rc, 2).ToUpper() == "OK")
+            {
+                GyShow.of_Show("保存成功!");
+            }
+            else
+            {
+                GyShow.of_Show("保存失败--"+ls_rc);
+            }
+
+        }
+        /// <summary>
+        /// 将List 形如 time1=10:00,2 转换成DataTable time key way
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        private DataTable ListToDataTable(List<string> list)
+        {
+            System.String[] str = list.ToArray();//List<string>list转成string[]list
+            DataTable dt = new DataTable();
+            dt.Columns.Add("time");
+            dt.Columns.Add("key");
+            dt.Columns.Add("way");
+            for (int i = 0; i < list.Count; i++)
+            {
+                try
+                {
+                    string[] num = list[i].Split(',');
+                    string[] bb = num[0].Split('=');
+                    DataRow da = dt.NewRow();
+                    da[0] = bb[0].ToString();
+                    da[1] = bb[1].ToString();
+                    da[2] = num[1].ToString();
+                    dt.Rows.Add(da);
+                }
+                catch
+                {
+                    //ini中存在不合格式的项
+                }
+            }
+            return dt;
+        }
+        private void button2_Click(object sender, EventArgs e)//取消
+        {
+            this.Close();
+        }
+
+    }
+}

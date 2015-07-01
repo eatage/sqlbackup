@@ -1,0 +1,379 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Data.SqlClient;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
+using System.Web.UI.WebControls;
+ 
+using System.IO;
+using sqlbackup;
+ 
+using System.Diagnostics;
+using System.Threading;
+
+namespace sqlbackup
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+        Service1 s = null;
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            string lastTime = INIFile.ContentValue("localbackup", "LastTime");
+            linkLabel1.Text = lastTime;
+            linkLabel2.Text = lastTime;
+            // this.Text = ConfigurationManager.AppSettings["servicedescription"];
+            s = new Service1();
+            SqlConnect();
+            Backup();
+            FtpUpload();
+        }
+        /// <summary>
+        /// 读取数据库连接配置
+        /// </summary>
+        private void SqlConnect()
+        {
+            if (INIFile.ContentValue("SqlConnect", "WindowsIdentity") == "false")
+            {
+
+                comboBox1.Text = INIFile.ContentValue("SqlConnect", "Server");
+                textBox1.Text = INIFile.ContentValue("SqlConnect", "UserName");
+                textBox2.Text = INIFile.ContentValue("SqlConnect", "PassWord");
+            }
+            if (INIFile.ContentValue("SqlConnect", "WindowsIdentity") == "true")
+            {
+                checkBox1.Checked = true;
+            }
+        }
+        /// <summary>
+        /// 读取FTP设置
+        /// </summary>
+        private void FtpUpload()
+        {
+            //FTP1
+            textBox4.Text = INIFile.ContentValue("FTP1", "IP");
+            textBox5.Text = INIFile.ContentValue("FTP1", "UserID");
+            textBox6.Text = INIFile.ContentValue("FTP1", "Password");
+            textBox8.Text = INIFile.ContentValue("FTP1", "Path");
+            textBox7.Text = INIFile.ContentValue("FTP1", "Port");
+            //FTP2
+            textBox13.Text = INIFile.ContentValue("FTP2", "IP");
+            textBox12.Text = INIFile.ContentValue("FTP2", "UserID");
+            textBox11.Text = INIFile.ContentValue("FTP2", "Password");
+            textBox9.Text = INIFile.ContentValue("FTP2", "Path");
+            textBox10.Text = INIFile.ContentValue("FTP2", "Port");
+        }
+        /// <summary>
+        /// 读取本地备份设置
+        /// </summary>
+        private void Backup()
+        {
+            if (INIFile.ContentValue("localbackup", "bDataServer") == "true")
+            {
+                radioButton1.Checked = true;
+            }
+            if (INIFile.ContentValue("localbackup", "WhetherDel") == "true")
+            {
+                checkBox4.Checked = true;
+            }
+            textBox3.Text = INIFile.ContentValue("localbackup", "LocalPath");
+            textBox14.Text = INIFile.ContentValue("localbackup", "Day");
+        }
+        private void button1_Click(object sender, EventArgs e)//启动服务
+        {
+            label24.Text = "服务正在运行中";
+            this.button1.Enabled = false;
+            this.button2.Enabled = true;
+            s.DoStart();
+            //notifyIcon1.ShowBalloonTip(3, "系统提示", "服务已成功启动……", ToolTipIcon.Info);
+            //Thread.Sleep(3000);
+            //notifyIcon1.Visible = false;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            label24.Text = "服务未运行";
+            this.button2.Enabled = false;
+            this.button1.Enabled = true;
+            s.DoStop();
+
+        }
+        /// <summary>
+        /// 连接数据库并获得数据库列表
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button5_Click(object sender, EventArgs e)
+        {
+            if (dataGridView1.Columns.Count > 0)//清除panel上的控件
+            {
+                dataGridView1.Columns.Clear();
+            }
+            string ServerScr = "", ServerName = "", ServerPwd = "";
+            ServerScr = comboBox1.Text.Trim();
+            ServerName = textBox1.Text.Trim();
+            ServerPwd = textBox2.Text.Trim();
+            SqlConnection sqlCon = new SqlConnection();
+            if (!checkBox1.Checked)//非windows认证
+            {
+                sqlCon.ConnectionString = "Data Source=" + ServerScr + ";Initial Catalog=;User Id=" + ServerName + ";Password=" + ServerPwd + ";";
+            }
+            if (checkBox1.Checked)//windows集成认证
+            {
+                sqlCon.ConnectionString = "Data Source=.;Initial Catalog=;Integrated Security=True";
+            }
+            string connection = sqlCon.ConnectionString;
+            try
+            {
+                sqlCon.Open();
+                MessageBox.Show("成功连接数据库服务器");
+                DataTable dt = new DataTable();
+                dt = DataBaseList(connection);
+                this.dataGridView1.Columns.Add("sqlname", "数据库名称");
+                this.dataGridView1.Columns.Add("sqldata", "数据库大小");
+                this.dataGridView1.Columns.Add("dbid", "数据库ID");
+                this.dataGridView1.Columns.Add("created", "创建时间");
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    this.dataGridView1.Rows.Add(dt.Rows[i]["name"].ToString(), dt.Rows[i]["db_size"].ToString(), dt.Rows[i]["dbid"].ToString(), dt.Rows[i]["created"].ToString());
+                }
+                DataGridViewCheckBoxColumn newColumn = new DataGridViewCheckBoxColumn();
+                newColumn.HeaderText = "选择";
+                dataGridView1.Columns.Insert(0, newColumn);
+                dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;//自定义列宽
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("数据库服务器登陆失败" + ex);
+            }
+            finally
+            {
+                sqlCon.Close();
+                sqlCon.Dispose();
+                sqlCon = null;
+            }
+        }
+
+        private void button7_Click(object sender, EventArgs e)//浏览文件夹
+        {
+            if (radioButton1.Checked == false)
+            {
+                MessageBox.Show("你还未选择程序存放位置");
+                return;
+            }
+            folderBrowserDialog1.RootFolder = Environment.SpecialFolder.Desktop;
+            folderBrowserDialog1.Description = "请选择文件夹";
+            DialogResult d = folderBrowserDialog1.ShowDialog();
+            if (d == DialogResult.OK)//已选文件夹
+            {
+                textBox3.Text = folderBrowserDialog1.SelectedPath;
+            }
+            else
+                textBox3.Text = "请选择目录！";
+        }
+        /// <summary>
+        /// 获取数据库列表(包括数据库名、数据库大小、dbid、创建时间)
+        /// </summary>
+        /// <param name="connection">连接字符串</param>
+        /// <returns></returns>
+        public DataTable DataBaseList(string connection)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("name");
+            dt.Columns.Add("db_size");
+            dt.Columns.Add("dbid");
+            dt.Columns.Add("created");
+            string cmdStirng = "EXEC  sp_helpdb";
+            //string cmdStirng = "select name from sysdatabases where dbid > 4 order by name asc";
+            SqlConnection connect = new SqlConnection(connection);
+            SqlCommand cmd = new SqlCommand(cmdStirng, connect);
+            try
+            {
+                if (connect.State == ConnectionState.Closed)
+                {
+                    connect.Open();
+                    IDataReader dr = cmd.ExecuteReader();
+                    while (dr.Read())
+                    {
+                        DataRow da = dt.NewRow();
+                        da[0] = dr["name"].ToString();
+                        da[1] = dr["db_size"].ToString();
+                        da[2] = dr["dbid"].ToString();
+                        da[3] = dr["created"].ToString();
+                        dt.Rows.Add(da);
+                    }
+                    dr.Close();
+                }
+            }
+            catch //(SqlException e)
+            {
+                //MessageBox.Show(e.Message);  
+            }
+            finally
+            {
+                if (connect != null && connect.State == ConnectionState.Open)
+                {
+                    connect.Dispose();
+                }
+            }
+            return dt;
+        }
+        private void button3_Click(object sender, EventArgs e)//全选数据库列表
+        {
+            if (dataGridView1.Controls.Count > 0)
+            {
+                for (int i = 0; i < dataGridView1.RowCount; i++)
+                {
+                    dataGridView1[0, i].Value = true;
+                }
+            }
+        }
+        private void button4_Click(object sender, EventArgs e)//全不选数据库列表
+        {
+            if (dataGridView1.Controls.Count > 0)
+            {
+                for (int i = 0; i < dataGridView1.RowCount; i++)
+                {
+                    dataGridView1[0, i].Value = false;
+                }
+            }
+        }
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)//勾选windows集成认证选项
+        {
+            if (checkBox1.Checked)
+            {
+                comboBox1.Enabled = false;
+                comboBox1.BackColor = Color.Silver;
+                textBox1.Enabled = false;
+                textBox1.BackColor = Color.Silver;
+                textBox2.Enabled = false;
+                textBox2.BackColor = Color.Silver;
+            }
+            if (!checkBox1.Checked)
+            {
+                comboBox1.Enabled = true;
+                comboBox1.BackColor = Color.White;
+                textBox1.Enabled = true;
+                textBox1.BackColor = Color.White;
+                textBox2.Enabled = true;
+                textBox2.BackColor = Color.White;
+            }
+        }
+
+        private void save_Click(object sender, EventArgs e)//保存配置
+        {
+            #region 保存数据库配置
+            INIFile.SetINIString("SqlConnect", "Server", comboBox1.Text.Trim());
+            INIFile.SetINIString("SqlConnect", "UserName", textBox1.Text.Trim());
+            INIFile.SetINIString("SqlConnect", "PassWord", textBox2.Text.Trim());
+            INIFile.SetINIString("SqlConnect", "WindowsIdentity", checkBox1.Checked.ToString());
+            List<string> aa = new List<string>();//获取勾选不进行备份的数据库列表
+            if (dataGridView1.RowCount > 0)
+            {
+                for (int i = 0; i < dataGridView1.RowCount; i++)
+                {
+                    if (dataGridView1[0, i].Value != null && (bool)dataGridView1[0, i].Value == true)
+                    {
+                        aa.Add(dataGridView1[1, i].Value.ToString());
+                    }
+                }
+                System.String[] str = aa.ToArray();
+                string menuclassids = string.Join(",", str);//将不备份的数据库列表保存为字符串，以,隔开 用Split(',');方法还原
+                if (menuclassids != "")//有勾选
+                {
+                    INIFile.SetINIString("notbackupdb", "notbackupdb", menuclassids);
+                }
+                else
+                {
+                    INIFile.SetINIString("notbackupdb", "notbackupdb", "");//清空不备份的数据库列表
+                }
+            }
+            #endregion
+            #region 备份配置
+            string LocalPath = textBox3.Text.Trim();
+            if (LocalPath.Substring(LocalPath.Length - 1, 1) == @"\")
+            {
+                LocalPath = LocalPath.Substring(0, LocalPath.Length - 1);
+            }
+            INIFile.SetINIString("localbackup", "bDataServer", radioButton1.Checked.ToString());
+            INIFile.SetINIString("localbackup", "WhetherDel", checkBox4.Checked.ToString());
+            INIFile.SetINIString("localbackup", "LocalPath", LocalPath);
+            INIFile.SetINIString("localbackup", "Day", textBox14.Text.ToString());
+            #endregion
+            #region FTP异地备份配置
+            //FTP1
+            INIFile.SetINIString("FTP1", "IP", textBox4.Text.Trim());
+            INIFile.SetINIString("FTP1", "UserID", textBox5.Text.Trim());
+            INIFile.SetINIString("FTP1", "Password", textBox6.Text.Trim());
+            INIFile.SetINIString("FTP1", "Path", textBox8.Text.Trim());
+            INIFile.SetINIString("FTP1", "Port", textBox7.Text.Trim());
+            //FTP2
+            INIFile.SetINIString("FTP2", "IP", textBox13.Text.Trim());
+            INIFile.SetINIString("FTP2", "UserID", textBox12.Text.Trim());
+            INIFile.SetINIString("FTP2", "Password", textBox11.Text.Trim());
+            INIFile.SetINIString("FTP2", "Path", textBox9.Text.Trim());
+            INIFile.SetINIString("FTP2", "Port", textBox10.Text.Trim());
+            #endregion
+            MessageBox.Show("设置已成功保存!");
+        }
+
+        private void button6_Click(object sender, EventArgs e)//完全备份
+        {
+
+        }
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (MessageBox.Show("您将退出系统,是否继续？", "系统提示", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                e.Cancel = false;
+            }
+            else
+            {
+                e.Cancel = true;
+            }
+        }
+
+        private void button8_Click(object sender, EventArgs e)//测试FTP1连接
+        {
+            FtpWeb ftp = new FtpWeb(textBox4.Text.Trim(), textBox8.Text.Trim(), textBox5.Text.Trim(), textBox6.Text.Trim());
+            if (ftp.Connect() == true)
+            {
+                MessageBox.Show("成功连接FTP服务器1");
+            }
+            else
+            {
+                MessageBox.Show("连接失败，请检查用户名密码及路径");
+            }
+        }
+
+        private void button9_Click(object sender, EventArgs e)//测试FTP2连接
+        {
+            FtpWeb ftp = new FtpWeb(textBox13.Text.Trim(), textBox9.Text.Trim(), textBox12.Text.Trim(), textBox11.Text.Trim());
+            if (ftp.GetFilesDetailList() != null)
+            {
+                MessageBox.Show("成功连接FTP服务器");
+            }
+            else
+            {
+                MessageBox.Show("连接失败，请检查用户名密码及路径");
+            }
+        }
+
+        private void button11_Click(object sender, EventArgs e)//备份时间设置
+        {
+            BackupTime backuptime = new BackupTime();
+            backuptime.ShowDialog();
+        }
+
+        private void button10_Click(object sender, EventArgs e)//打开出错文件
+        {
+            System.Diagnostics.Process.Start("Explorer.exe", "D:\\log\\smssys2014\\");
+        }
+    }
+}
